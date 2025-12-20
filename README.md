@@ -1,6 +1,3 @@
-Here's the complete README.md file ready to paste:
-
-```markdown
 <p align="center">
     <img src="https://raw.githubusercontent.com/PKief/vscode-material-icon-theme/ec559a9f6bfd399b82bb44393651661b08aaf7ba/icons/folder-markdown-open.svg" align="center" width="30%">
 </p>
@@ -673,4 +670,3 @@ We welcome contributions from the community! Here's how you can help:
 - 🐛 Report bugs or issues on our [Issues Tracker](https://github.com/Nitya-Nivdunge/leave-productivity-analyzer/issues)
 - 📧 For direct inquiries, please use GitHub discussions
 ---
-```
