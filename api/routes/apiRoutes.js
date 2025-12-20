@@ -628,4 +628,66 @@ router.get('/year-comparison', async (req, res) => {
   }
 });
 
+// GET /api/employees/productivity/:year
+router.get('/employees/productivity/:year', async (req, res) => {
+  try {
+    const { year } = req.params;
+    
+    // Validate year
+    if (!year || isNaN(year) || year < 2000 || year > new Date().getFullYear() + 1) {
+      return res.status(400).json({ error: 'Invalid year' });
+    }
+
+    const productivityData = await Attendance.aggregate([
+      {
+        $match: {
+          date: {
+            $gte: new Date(`${year}-01-01`),
+            $lt: new Date(`${parseInt(year) + 1}-01-01`)
+          }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            employeeId: "$employeeId",
+            employeeName: "$employeeName"
+          },
+          totalWorkedHours: { $sum: "$workedHours" },
+          totalExpectedHours: { $sum: "$expectedHours" },
+          leaveDays: { $sum: { $cond: [{ $eq: ["$isLeave", true] }, 1, 0] } }
+        }
+      },
+      {
+        $project: {
+          employeeId: "$_id.employeeId",
+          employeeName: "$_id.employeeName",
+          totalWorkedHours: 1,
+          leaveDays: 1,
+          productivity: {
+            $cond: [
+              { $gt: ["$totalExpectedHours", 0] },
+              { $multiply: [{ $divide: ["$totalWorkedHours", "$totalExpectedHours"] }, 100] },
+              0
+            ]
+          }
+        }
+      },
+      { $sort: { employeeName: 1 } }
+    ]);
+
+    res.json({
+      year,
+      employees: productivityData
+    });
+    
+  } catch (error) {
+    console.error('Error fetching employees productivity:', error);
+    res.status(500).json({ error: 'Failed to fetch employees productivity data' });
+  }
+});
+
+
+
+
 module.exports = router;

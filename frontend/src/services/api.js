@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
   ? '/api' 
-  : 'http://localhost:5000/api';
+  : 'http://localhost:3000/api';
   
 // Create axios instance
 const api = axios.create({
@@ -110,15 +110,6 @@ export const getEmployees = async () => {
   }
 };
 
-// Health check
-export const healthCheck = async () => {
-  try {
-    const response = await api.get('/health');
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || error;
-  }
-};
 
 // Get overall insights
 export const getOverallInsights = async (year) => {
