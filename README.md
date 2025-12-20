@@ -56,16 +56,14 @@
 
 ## 🎥 Video Demonstration
 
-[![Leave Productivity Analyzer Demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://youtube.com/watch?v=YOUR_VIDEO_ID)
+### Watch the Demo Video
+[![Leave Productivity Analyzer Demo](./thumbnail.jpg)](./demo.mp4)
 
-*Click the image above to watch the full demo video*  
-*(Replace YOUR_VIDEO_ID with your actual YouTube video ID)*
+*Click the image above to download and watch the demo video*
 
-**Alternative method if video is in repository:**
-```markdown
-### 🎬 Project Demo
-Download and watch: [demo_video.mp4](./path/to/your/video.mp4)
-```
+**If you don't see a thumbnail above:**
+Simply download the video file directly: [demo_video.mp4](./demo.mp4)
+
 
 ---
 
@@ -80,7 +78,6 @@ Download and watch: [demo_video.mp4](./path/to/your/video.mp4)
 
 ### 📈 **Analytics & Insights**
 - **Year-over-Year Comparison**: Track productivity changes across fiscal years
-- **Department-wise Analysis**: Compare team performances and leave patterns
 - **Productivity Trend Lines**: Identify seasonal patterns and anomalies
 - **Attendance Heatmaps**: Visualize workforce concentration across calendar
 
@@ -114,7 +111,6 @@ Download and watch: [demo_video.mp4](./path/to/your/video.mp4)
     │   ├── February_2025.xlsx
     │   ├── January_2025.xlsx
     │   └── March_2025.xlsx
-    ├── NMIMS Intern Assignment.md
     ├── api/
     │   ├── .gitignore
     │   ├── config/
