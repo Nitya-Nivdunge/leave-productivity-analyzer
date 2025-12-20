@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+api/node_modules/
+
+# Build outputs
+frontend/build/
+dist/
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+# Environment files
+*.env
+.env*
+!vercel.json
+
+# OS
+.DS_Store
