@@ -56,13 +56,19 @@
 [![Leave Productivity Analyzer Demo Video - Click to Play](./demo_thumbnail.png)](https://drive.google.com/file/d/1p0p_v4MhUiboTZjmCa7lsx3oqX3S9Zz0/view?usp=drive_link)
 
 *If unable to see the demo video try the fllowiing :*
+
+
+
 <a href="https://drive.google.com/file/d/1p0p_v4MhUiboTZjmCa7lsx3oqX3S9Zz0/view?usp=drive_link" target="_blank">
   <img src="https://img.shields.io/badge/▶️_Watch_Demo_on_Google_Drive-4285F4?style=for-the-badge&logo=google-drive&logoColor=white" alt="Watch on Google Drive" width="350">
 </a>
 
+
 <a href="./demo.mp4" download>
   <img src="https://img.shields.io/badge/⬇️_Download_Demo_Video_(demo.mp4)-purple?style=for-the-badge" alt="Download Video" width="300">
 </a>
+
+
 ---
 
 ## 👾 Features
