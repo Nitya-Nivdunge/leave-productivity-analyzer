@@ -54,7 +54,7 @@
 ## 🎥 Video Demonstration
 
 ### Watch the Demo Video
-[![Leave Productivity Analyzer Demo](./thumbnail.jpg)](./https://drive.google.com/file/d/1p0p_v4MhUiboTZjmCa7lsx3oqX3S9Zz0/view?usp=drive_link/preview)
+[![Leave Productivity Analyzer Demo](./demo_thumbnail.png)](./https://drive.google.com/file/d/1p0p_v4MhUiboTZjmCa7lsx3oqX3S9Zz0/view?usp=drive_link)
 
 <a href="https://drive.google.com/file/d/1p0p_v4MhUiboTZjmCa7lsx3oqX3S9Zz0/view?usp=drive_link" target="_blank">
   <img src="./thumbnail.jpg" alt="Watch Demo Video" width="250">
