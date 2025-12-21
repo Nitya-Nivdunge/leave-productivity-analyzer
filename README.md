@@ -53,32 +53,16 @@
 
 ## 🎥 Video Demonstration
 
-### **Option 1: Watch on Google Drive (Recommended)**
+[![Leave Productivity Analyzer Demo Video - Click to Play](./demo_thumbnail.png)](https://drive.google.com/file/d/1p0p_v4MhUiboTZjmCa7lsx3oqX3S9Zz0/view?usp=drive_link)
 
+*If unable to see the demo video try the fllowiing :*
 <a href="https://drive.google.com/file/d/1p0p_v4MhUiboTZjmCa7lsx3oqX3S9Zz0/view?usp=drive_link" target="_blank">
   <img src="https://img.shields.io/badge/▶️_Watch_Demo_on_Google_Drive-4285F4?style=for-the-badge&logo=google-drive&logoColor=white" alt="Watch on Google Drive" width="350">
 </a>
 
-**Direct Link:** [https://drive.google.com/file/d/1p0p_v4MhUiboTZjmCa7lsx3oqX3S9Zz0/view](https://drive.google.com/file/d/1p0p_v4MhUiboTZjmCa7lsx3oqX3S9Zz0/view)
-
----
-
-### **Option 2: Clickable Thumbnail Image**
-
-[![Leave Productivity Analyzer Demo Video](./demo_thumbnail.png)](https://drive.google.com/file/d/1p0p_v4MhUiboTZjmCa7lsx3oqX3S9Zz0/view?usp=drive_link)
-
-*Click the image above to watch the demo video on Google Drive*
-
----
-
-### **Option 3: Download from GitHub**
-
 <a href="./demo.mp4" download>
   <img src="https://img.shields.io/badge/⬇️_Download_Demo_Video_(demo.mp4)-purple?style=for-the-badge" alt="Download Video" width="300">
 </a>
-
-**Direct Download:** [demo.mp4](./demo.mp4)
-
 ---
 
 ## 👾 Features
