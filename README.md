@@ -54,16 +54,14 @@
 ## 🎥 Video Demonstration
 
 ### Watch the Demo Video
-[![Leave Productivity Analyzer Demo](./thumbnail.jpg)](./demo.mp4)
+[![Leave Productivity Analyzer Demo](./thumbnail.jpg)](./https://drive.google.com/file/d/1p0p_v4MhUiboTZjmCa7lsx3oqX3S9Zz0/view?usp=drive_link/preview)
 
 <a href="https://drive.google.com/file/d/1p0p_v4MhUiboTZjmCa7lsx3oqX3S9Zz0/view?usp=drive_link" target="_blank">
   <img src="./thumbnail.jpg" alt="Watch Demo Video" width="250">
 </a>
 
-*Click the image above to download and watch the demo video*
-
 **If you don't see a thumbnail above:**
-Simply download the video file directly: [demo_video.mp4](./https://drive.google.com/file/d/1p0p_v4MhUiboTZjmCa7lsx3oqX3S9Zz0/view?usp=drive_link)
+Google Drive link of the video file : [demo.mp4](./https://drive.google.com/file/d/1p0p_v4MhUiboTZjmCa7lsx3oqX3S9Zz0/view?usp=drive_link)
 
 
 ---
