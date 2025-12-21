@@ -36,10 +36,7 @@
   - [🧪 Testing](#-testing)
 - [📌 Project Roadmap](#-project-roadmap)
 - [🔰 Contributing](#-contributing)
-- [🎗 License](#-license)
-- [🙌 Acknowledgments](#-acknowledgments)
 - [📞 Support & Contact](#-support--contact)
-
 ---
 
 ## 📍 Overview
@@ -59,10 +56,14 @@
 ### Watch the Demo Video
 [![Leave Productivity Analyzer Demo](./thumbnail.jpg)](./demo.mp4)
 
+<a href="https://drive.google.com/file/d/1p0p_v4MhUiboTZjmCa7lsx3oqX3S9Zz0/view?usp=drive_link" target="_blank">
+  <img src="./thumbnail.jpg" alt="Watch Demo Video" width="250">
+</a>
+
 *Click the image above to download and watch the demo video*
 
 **If you don't see a thumbnail above:**
-Simply download the video file directly: [demo_video.mp4](./demo.mp4)
+Simply download the video file directly: [demo_video.mp4](./https://drive.google.com/file/d/1p0p_v4MhUiboTZjmCa7lsx3oqX3S9Zz0/view?usp=drive_link)
 
 
 ---
