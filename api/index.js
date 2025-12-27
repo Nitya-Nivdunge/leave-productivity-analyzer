@@ -1,7 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -10,18 +9,49 @@ const app = express();
 mongoose.set('strictQuery', false);
 
 // CORS configuration for Vercel
+const allowedOrigins = process.env.NODE_ENV === 'production' 
+  ? [
+      'https://leave-productivity-analyzer.vercel.app',
+      'https://leave-productivity-analyzer-git-main-nitya-nivdunges-projects.vercel.app',
+      /https:\/\/leave-productivity-analyzer-.*\.vercel\.app$/
+    ]
+  : ['http://localhost:3000'];
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-app-name.vercel.app'] 
-    : 'http://localhost:3000',
-  credentials: true
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const isAllowed = allowedOrigins.some(allowedOrigin => {
+      if (typeof allowedOrigin === 'string') {
+        return origin === allowedOrigin;
+      }
+      return allowedOrigin.test(origin);
+    });
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(express.json());
+// Handle preflight requests
+app.options('*', cors());
 
-// Import your existing routes
-const apiRoutes = require('./routes/apiRoutes');
-app.use('/api', apiRoutes);
+// Body parsing middleware
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  next();
+});
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -33,121 +63,67 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// MongoDB connection with fallback
+// MongoDB connection
+let isConnected = false;
+
 const connectDB = async () => {
+  if (isConnected) {
+    console.log('Using existing MongoDB connection');
+    return;
+  }
+
   try {
     const mongoURI = process.env.MONGODB_URI;
     
     if (!mongoURI) {
-      console.warn(' MONGODB_URI not set. Using in-memory data (data will be lost on restart).');
-      return; // Skip connection for now
+      console.warn(' MONGODB_URI not set. Database features will not work.');
+      return;
     }
     
+    console.log(' Attempting MongoDB connection...');
     await mongoose.connect(mongoURI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-    });const express = require('express');
-    const mongoose = require('mongoose');
-    const cors = require('cors');
-    const path = require('path');
-    require('dotenv').config();
-    
-    const app = express();
-    
-    // Fix Mongoose deprecation warning
-    mongoose.set('strictQuery', false);
-    
-    // CORS configuration for Vercel
-    const allowedOrigins = process.env.NODE_ENV === 'production' 
-      ? [
-          'https://leave-productivity-analyzer.vercel.app',
-          'https://leave-productivity-analyzer-git-main-nitya-nivdunges-projects.vercel.app',
-          'https://leave-productivity-analyzer-*.vercel.app'
-        ]
-      : 'http://localhost:3000';
-    
-    app.use(cors({
-      origin: allowedOrigins,
-      credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization']
-    }));
-    
-    // Handle preflight requests
-    app.options('*', cors());
-    
-    app.use(express.json());
-    
-    // Add request logging middleware for debugging
-    app.use((req, res, next) => {
-      console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-      next();
+      serverSelectionTimeoutMS: 5000,
     });
     
-    // Import your existing routes - FIX THE PATH HERE
-    // Assuming apiRoutes.js is in the same directory (api folder)
-    const apiRoutes = require('./apiRoutes'); // Changed from './routes/apiRoutes'
-    app.use('/api', apiRoutes);
-    
-    // MongoDB connection with fallback
-    const connectDB = async () => {
-      try {
-        const mongoURI = process.env.MONGODB_URI;
-        
-        if (!mongoURI) {
-          console.warn(' MONGODB_URI not set. Using in-memory data (data will be lost on restart).');
-          return; // Skip connection for now
-        }
-        
-        console.log(' Attempting MongoDB connection...');
-        await mongoose.connect(mongoURI, {
-          useNewUrlParser: true,
-          useUnifiedTopology: true,
-        });
-        console.log(' MongoDB connected successfully');
-      } catch (error) {
-        console.error(' MongoDB connection failed:', error.message);
-        console.log(' For production, set MONGODB_URI in environment variables.');
-      }
-    };
-    
-    // Connect to DB (non-blocking)
-    connectDB();
-    
-    // Error handling middleware
-    app.use((err, req, res, next) => {
-      console.error('Server Error:', err);
-      res.status(500).json({ 
-        error: 'Internal server error',
-        message: process.env.NODE_ENV === 'development' ? err.message : undefined
-      });
-    });
-    
-    // 404 handler for undefined routes
-    app.use('*', (req, res) => {
-      res.status(404).json({ 
-        error: 'Route not found',
-        path: req.originalUrl,
-        method: req.method 
-      });
-    });
-    
-    // Export as Vercel serverless function
-    module.exports = (req, res) => {
-      console.log(` Incoming request: ${req.method} ${req.url}`);
-      return app(req, res);
-    };
+    isConnected = true;
     console.log(' MongoDB connected successfully');
   } catch (error) {
-    console.warn(' MongoDB connection failed. Using in-memory data.');
+    console.error(' MongoDB connection failed:', error.message);
     console.log(' For production, set MONGODB_URI in environment variables.');
   }
 };
 
-// Connect to DB (non-blocking)
-connectDB();
+// Import routes - AFTER middleware setup
+const apiRoutes = require('./apiRoutes');
+app.use('/api', apiRoutes);
 
-// Export as Vercel serverless function
-module.exports = (req, res) => {
+// 404 handler for undefined routes
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ 
+    error: 'API Route not found',
+    path: req.originalUrl,
+    method: req.method 
+  });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Server Error:', err);
+  res.status(500).json({ 
+    error: 'Internal server error',
+    message: process.env.NODE_ENV === 'development' ? err.message : 'An error occurred'
+  });
+});
+
+// Export handler for Vercel serverless
+module.exports = async (req, res) => {
+  // Connect to DB on each request (Vercel serverless pattern)
+  await connectDB();
+  
+  console.log(` Incoming request: ${req.method} ${req.url}`);
+  
+  // Let Express handle the request
   return app(req, res);
 };
