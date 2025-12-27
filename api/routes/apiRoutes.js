@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const upload = require('../middleware/upload');
-const uploadController = require('../controllers/uploadController');
-const attendanceController = require('../controllers/attendanceController');
-const Attendance = require('../models/Attendance'); // Adjust path as needed
-const Employee = require('../models/Employee'); // Adjust path as needed
+const upload = require('./middleware/upload');
+const uploadController = require('./controllers/uploadController');
+const attendanceController = require('./controllers/attendanceController');
+const Attendance = require('./models/Attendance');
+const Employee = require('./models/Employee');
 
 // Health check
 router.get('/health', (req, res) => {
@@ -16,9 +16,20 @@ router.get('/health', (req, res) => {
   });
 });
 
-// File upload endpoint
+// File upload endpoint - FIX: Proper error handling for multer
 router.post('/upload',
-  upload.single('file'),
+  (req, res, next) => {
+    upload.single('file')(req, res, (err) => {
+      if (err) {
+        console.error('Multer error:', err);
+        return res.status(400).json({
+          error: 'File upload error',
+          message: err.message
+        });
+      }
+      next();
+    });
+  },
   uploadController.uploadAttendance
 );
 
@@ -53,12 +64,10 @@ router.get('/year/:year', async (req, res) => {
   try {
     const { year } = req.params;
     
-    // Validate year
     if (!year || isNaN(year) || year < 2000 || year > new Date().getFullYear() + 1) {
       return res.status(400).json({ error: 'Invalid year' });
     }
 
-    // Query database for all months of the year
     const monthsData = await Attendance.aggregate([
       {
         $match: {
@@ -98,14 +107,11 @@ router.get('/year/:year', async (req, res) => {
       { $sort: { month: 1 } }
     ]);
     
-    // If no data found, return 404
     if (!monthsData || monthsData.length === 0) {
       return res.status(404).json({ error: 'No data found for this year' });
     }
 
-    // Process each month to calculate statistics
     const processedMonths = await Promise.all(monthsData.map(async (monthData) => {
-      // Group by employee for this month
       const employeeMap = new Map();
       
       monthData.employees.forEach(record => {
@@ -132,7 +138,6 @@ router.get('/year/:year', async (req, res) => {
         }
       });
       
-      // Calculate statistics for each employee
       const statistics = Array.from(employeeMap.values()).map(emp => {
         const productivity = emp.expectedHours > 0 
           ? (emp.totalWorkedHours / emp.expectedHours) * 100 
@@ -144,7 +149,7 @@ router.get('/year/:year', async (req, res) => {
           totalWorkedHours: emp.totalWorkedHours,
           leavesTaken: emp.leaveDays,
           productivity: Math.min(productivity, 100),
-          leavesAllowed: 2 // Default leaves per month
+          leavesAllowed: 2
         };
       });
       
@@ -167,17 +172,15 @@ router.get('/year/:year', async (req, res) => {
   }
 });
 
-// GET /api/year-aggregated/:year - Get aggregated yearly data
+// GET /api/year-aggregated/:year
 router.get('/year-aggregated/:year', async (req, res) => {
   try {
     const { year } = req.params;
 
-    // Validate year
     if (!year || isNaN(year) || year < 2000 || year > new Date().getFullYear() + 1) {
       return res.status(400).json({ error: 'Invalid year' });
     }
 
-    // Get monthly data first
     const yearResponse = await Attendance.aggregate([
       {
         $match: {
@@ -226,7 +229,6 @@ router.get('/year-aggregated/:year', async (req, res) => {
           totalWorkedHours: 1,
           totalLeavesTaken: 1,
           totalExpectedHours: 1,
-          // Calculate productivity for each month
           monthlyProductivity: {
             $map: {
               input: "$monthlyData",
@@ -252,15 +254,12 @@ router.get('/year-aggregated/:year', async (req, res) => {
       return res.status(404).json({ error: 'No data found for this year' });
     }
     
-    // Process the aggregated data
     const employees = yearResponse.map(emp => {
-      // Calculate average productivity
       const validMonths = emp.monthlyProductivity.filter(m => m.productivity > 0);
       const avgProductivity = validMonths.length > 0 
         ? validMonths.reduce((sum, m) => sum + m.productivity, 0) / validMonths.length
         : 0;
       
-      // Find best and worst months
       let bestMonth = { month: 0, productivity: 0 };
       let worstMonth = { month: 0, productivity: 100 };
       let exceededLimitMonths = 0;
@@ -301,7 +300,6 @@ router.get('/year-aggregated/:year', async (req, res) => {
       };
     });
     
-    // Calculate overall stats
     const totalEmployees = employees.length;
     const totalHours = employees.reduce((sum, emp) => sum + emp.totalWorkedHours, 0);
     const totalLeaves = employees.reduce((sum, emp) => sum + emp.totalLeavesTaken, 0);
@@ -325,12 +323,11 @@ router.get('/year-aggregated/:year', async (req, res) => {
   }
 });
 
-// GET /api/previous-month/:year/:month - Get previous month data
+// GET /api/previous-month/:year/:month
 router.get('/previous-month/:year/:month', async (req, res) => {
   try {
     const { year, month } = req.params;
     
-    // Calculate previous month
     let prevYear = parseInt(year);
     let prevMonth = parseInt(month) - 1;
     
@@ -339,7 +336,6 @@ router.get('/previous-month/:year/:month', async (req, res) => {
       prevYear = prevYear - 1;
     }
     
-    // Get data for previous month using your existing monthly endpoint logic
     const monthlyData = await Attendance.aggregate([
       {
         $match: {
@@ -392,19 +388,15 @@ router.get('/previous-month/:year/:month', async (req, res) => {
   }
 });
 
-// NEW ROUTES NEEDED FOR THE FRONTEND
-
-// GET /api/overall/:year - Get overall insights for a year
+// GET /api/overall/:year
 router.get('/overall/:year', async (req, res) => {
   try {
     const { year } = req.params;
     
-    // Validate year
     if (!year || isNaN(year) || year < 2000 || year > new Date().getFullYear() + 1) {
       return res.status(400).json({ error: 'Invalid year' });
     }
 
-    // Get aggregated year data
     const yearData = await Attendance.aggregate([
       {
         $match: {
@@ -431,7 +423,6 @@ router.get('/overall/:year', async (req, res) => {
       return res.status(404).json({ error: 'No data found for this year' });
     }
 
-    // Calculate overall stats
     const totalEmployees = yearData.length;
     const totalHours = yearData.reduce((sum, emp) => sum + emp.totalWorkedHours, 0);
     const totalLeaves = yearData.reduce((sum, emp) => sum + emp.leaveDays, 0);
@@ -461,12 +452,11 @@ router.get('/overall/:year', async (req, res) => {
   }
 });
 
-// GET /api/workforce/:year/:month - Get workforce daily breakdown
+// GET /api/workforce/:year/:month
 router.get('/workforce/:year/:month', async (req, res) => {
   try {
     const { year, month } = req.params;
     
-    // Validate year and month
     if (!year || isNaN(year) || year < 2000 || year > new Date().getFullYear() + 1) {
       return res.status(400).json({ error: 'Invalid year' });
     }
@@ -536,7 +526,6 @@ router.get('/workforce/:year/:month', async (req, res) => {
       { $sort: { date: 1 } }
     ]);
 
-    // Return with proper structure
     res.json({
       year: parseInt(year),
       month: parseInt(month),
@@ -552,14 +541,12 @@ router.get('/workforce/:year/:month', async (req, res) => {
   }
 });
 
-// GET /api/year-comparison - Get year comparison data
-// GET /api/year-comparison - Get year comparison data
+// GET /api/year-comparison
 router.get('/year-comparison', async (req, res) => {
   try {
     const currentYear = new Date().getFullYear();
     const years = [currentYear - 1, currentYear];
     
-    // First, get the year data with employee counts
     const yearData = await Attendance.aggregate([
       {
         $match: {
@@ -594,7 +581,6 @@ router.get('/year-comparison', async (req, res) => {
       { $sort: { year: 1 } }
     ]);
 
-    // Calculate averages
     const comparisonData = yearData.map(item => {
       const avgProductivity = item.totalExpectedHours > 0 
         ? (item.totalWorkedHours / item.totalExpectedHours) * 100 
@@ -633,7 +619,6 @@ router.get('/employees/productivity/:year', async (req, res) => {
   try {
     const { year } = req.params;
     
-    // Validate year
     if (!year || isNaN(year) || year < 2000 || year > new Date().getFullYear() + 1) {
       return res.status(400).json({ error: 'Invalid year' });
     }
@@ -686,8 +671,5 @@ router.get('/employees/productivity/:year', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch employees productivity data' });
   }
 });
-
-
-
 
 module.exports = router;
