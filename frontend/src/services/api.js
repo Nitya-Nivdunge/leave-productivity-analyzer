@@ -1,8 +1,11 @@
 import axios from 'axios';
 
+// Determine API base URL based on environment
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? '/api' 
+  ? '/api'  // Relative path for Vercel
   : 'http://localhost:3000/api';
+
+console.log('API Base URL:', API_BASE_URL);
   
 // Create axios instance
 const api = axios.create({
@@ -10,8 +13,32 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 15000, // 15 second timeout for complex operations
+  timeout: 30000, // 30 second timeout
 });
+
+// Add request interceptor for debugging
+api.interceptors.request.use(
+  (config) => {
+    console.log(`Making request to: ${config.baseURL}${config.url}`);
+    return config;
+  },
+  (error) => {
+    console.error('Request error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor for debugging
+api.interceptors.response.use(
+  (response) => {
+    console.log(`Response from ${response.config.url}:`, response.status);
+    return response;
+  },
+  (error) => {
+    console.error('Response error:', error.response?.status, error.response?.data);
+    return Promise.reject(error);
+  }
+);
 
 // File upload with progress tracking
 export const uploadAttendance = async (file, month, year, override = false) => {
@@ -22,19 +49,29 @@ export const uploadAttendance = async (file, month, year, override = false) => {
   formData.append('override', override);
 
   try {
+    console.log(`Uploading file for ${year}-${month}, override: ${override}`);
     const response = await api.post('/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      timeout: 60000, // 60 seconds for file upload
     });
+    console.log('Upload successful:', response.data);
     return response.data;
   } catch (error) {
+    console.error('Upload error:', error);
     // Handle duplicate key error specifically
     if (error.response?.data?.error?.includes('duplicate key') || 
         error.response?.data?.error?.includes('E11000')) {
       throw { 
         status: 409, 
         message: 'Attendance record already exists for this employee and date. Check "Override" to replace existing data.' 
+      };
+    }
+    if (error.response?.status === 409) {
+      throw {
+        status: 409,
+        message: error.response.data.message || 'Data already exists. Use override option to replace.'
       };
     }
     throw error.response?.data || error;
@@ -47,6 +84,7 @@ export const getDashboardData = async () => {
     const response = await api.get('/dashboard');
     return response.data;
   } catch (error) {
+    console.error('Dashboard data error:', error);
     throw error.response?.data || error;
   }
 };
@@ -54,12 +92,15 @@ export const getDashboardData = async () => {
 // Get monthly data
 export const getMonthlyData = async (year, month) => {
   try {
+    console.log(`Fetching monthly data for ${year}-${month}`);
     const response = await api.get(`/month/${year}/${month}`);
     return response.data;
   } catch (error) {
     if (error.response?.status === 404) {
+      console.log(`No data found for ${year}-${month}`);
       return null;
     }
+    console.error(`Error fetching monthly data for ${year}-${month}:`, error);
     throw error.response?.data || error;
   }
 };
@@ -67,12 +108,15 @@ export const getMonthlyData = async (year, month) => {
 // Get all months data for a year
 export const getYearData = async (year) => {
   try {
+    console.log(`Fetching year data for ${year}`);
     const response = await api.get(`/year/${year}`);
     return response.data;
   } catch (error) {
     if (error.response?.status === 404) {
+      console.log(`No year data found for ${year}`);
       return null;
     }
+    console.error(`Error fetching year data for ${year}:`, error);
     throw error.response?.data || error;
   }
 };
@@ -80,12 +124,15 @@ export const getYearData = async (year) => {
 // Get aggregated yearly data for employees
 export const getYearlyAggregatedData = async (year) => {
   try {
+    console.log(`Fetching aggregated year data for ${year}`);
     const response = await api.get(`/year-aggregated/${year}`);
     return response.data;
   } catch (error) {
     if (error.response?.status === 404) {
+      console.log(`No aggregated data found for ${year}`);
       return null;
     }
+    console.error(`Error fetching aggregated data for ${year}:`, error);
     throw error.response?.data || error;
   }
 };
@@ -96,6 +143,7 @@ export const getAllMonths = async () => {
     const response = await api.get('/months');
     return response.data;
   } catch (error) {
+    console.error('Error fetching all months:', error);
     throw error.response?.data || error;
   }
 };
@@ -106,20 +154,23 @@ export const getEmployees = async () => {
     const response = await api.get('/employees');
     return response.data;
   } catch (error) {
+    console.error('Error fetching employees:', error);
     throw error.response?.data || error;
   }
 };
 
-
 // Get overall insights
 export const getOverallInsights = async (year) => {
   try {
+    console.log(`Fetching overall insights for ${year}`);
     const response = await api.get(`/overall/${year}`);
     return response.data;
   } catch (error) {
     if (error.response?.status === 404) {
+      console.log(`No overall insights found for ${year}`);
       return null;
     }
+    console.error(`Error fetching overall insights for ${year}:`, error);
     throw error.response?.data || error;
   }
 };
@@ -127,9 +178,9 @@ export const getOverallInsights = async (year) => {
 // Get year comparison data
 export const getYearComparison = async () => {
   try {
+    console.log('Fetching year comparison data');
     const response = await api.get('/year-comparison');
     
-    // Ensure we have the right data structure
     if (response.data && Array.isArray(response.data)) {
       return response.data.map(item => ({
         year: item.year,
@@ -145,8 +196,10 @@ export const getYearComparison = async () => {
     return response.data || [];
   } catch (error) {
     if (error.response?.status === 404) {
+      console.log('No year comparison data found');
       return [];
     }
+    console.error('Error fetching year comparison:', error);
     throw error.response?.data || error;
   }
 };
@@ -154,14 +207,12 @@ export const getYearComparison = async () => {
 // Get all employees productivity
 export const getAllEmployeesProductivity = async (year) => {
   try {
+    console.log(`Fetching all employees productivity for ${year}`);
     const response = await api.get(`/employees/productivity/${year}`);
     
-    // Transform the response to include leaves data
     if (response.data && response.data.employees) {
-      // Get leaves data separately
       const yearData = await getOverallInsights(year);
       if (yearData && yearData.employees) {
-        // Merge productivity data with leaves data
         const mergedEmployees = response.data.employees.map(prodEmp => {
           const leaveData = yearData.employees.find(leaveEmp => 
             leaveEmp.employeeId === prodEmp.employeeId || 
@@ -184,8 +235,10 @@ export const getAllEmployeesProductivity = async (year) => {
     return response.data || { employees: [] };
   } catch (error) {
     if (error.response?.status === 404) {
+      console.log(`No productivity data found for ${year}`);
       return { employees: [] };
     }
+    console.error(`Error fetching productivity for ${year}:`, error);
     throw error.response?.data || error;
   }
 };
@@ -193,12 +246,15 @@ export const getAllEmployeesProductivity = async (year) => {
 // Get workforce daily breakdown
 export const getWorkforceDailyBreakdown = async (year, month) => {
   try {
+    console.log(`Fetching workforce breakdown for ${year}-${month}`);
     const response = await api.get(`/workforce/${year}/${month}`);
     return response.data;
   } catch (error) {
     if (error.response?.status === 404) {
+      console.log(`No workforce data found for ${year}-${month}`);
       return null;
     }
+    console.error(`Error fetching workforce data for ${year}-${month}:`, error);
     throw error.response?.data || error;
   }
 };
@@ -206,7 +262,6 @@ export const getWorkforceDailyBreakdown = async (year, month) => {
 // Get previous month data
 export const getPreviousMonthData = async (year, month) => {
   try {
-    // Calculate previous month
     let prevYear = year;
     let prevMonth = month - 1;
     
@@ -215,12 +270,15 @@ export const getPreviousMonthData = async (year, month) => {
       prevYear = year - 1;
     }
     
+    console.log(`Fetching previous month data for ${prevYear}-${prevMonth}`);
     const response = await api.get(`/month/${prevYear}/${prevMonth}`);
     return response.data;
   } catch (error) {
     if (error.response?.status === 404) {
+      console.log(`No previous month data found for ${prevYear}-${prevMonth}`);
       return null;
     }
+    console.error('Error fetching previous month data:', error);
     throw error.response?.data || error;
   }
 };
@@ -228,6 +286,7 @@ export const getPreviousMonthData = async (year, month) => {
 // Helper function to aggregate year data from monthly data
 export const aggregateYearDataFromMonthly = async (year) => {
   try {
+    console.log(`Aggregating year data for ${year}`);
     // Try to get aggregated data first
     const aggregated = await getYearlyAggregatedData(year);
     if (aggregated) return aggregated;
@@ -253,7 +312,6 @@ const aggregateMonthlyData = (monthsData, year) => {
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
   
-  // Process each month's data
   monthsData.forEach(monthData => {
     if (!monthData || !monthData.statistics) return;
     
@@ -279,7 +337,6 @@ const aggregateMonthlyData = (monthsData, year) => {
       
       const empData = employeeMap.get(empId);
       
-      // Add monthly data
       const monthKey = `${monthName} ${year}`;
       empData.monthsData.push({
         month: monthKey,
@@ -290,18 +347,15 @@ const aggregateMonthlyData = (monthsData, year) => {
         leavesAllowed: employee.leavesAllowed || 2
       });
       
-      // Update totals
       empData.totalWorkedHours += employee.totalWorkedHours || 0;
       empData.totalLeavesTaken += employee.leavesTaken || 0;
       empData.totalProductivity += employee.productivity || 0;
       empData.monthCount++;
       
-      // Check if exceeded limit this month
       if ((employee.leavesTaken || 0) > (employee.leavesAllowed || 2)) {
         empData.exceededLimitMonths++;
       }
       
-      // Track monthly performance
       empData.monthlyPerformance[monthKey] = {
         productivity: employee.productivity || 0,
         leavesTaken: employee.leavesTaken || 0,
@@ -310,9 +364,7 @@ const aggregateMonthlyData = (monthsData, year) => {
     });
   });
   
-  // Convert map to array and calculate averages
   const aggregatedEmployees = Array.from(employeeMap.values()).map(emp => {
-    // Find best and worst months
     let bestMonth = { month: 'N/A', productivity: 0 };
     let worstMonth = { month: 'N/A', productivity: 100 };
     
@@ -337,7 +389,6 @@ const aggregateMonthlyData = (monthsData, year) => {
     };
   });
   
-  // Calculate overall year stats
   const totalEmployees = aggregatedEmployees.length;
   const totalHours = aggregatedEmployees.reduce((sum, emp) => sum + emp.totalWorkedHours, 0);
   const totalLeaves = aggregatedEmployees.reduce((sum, emp) => sum + emp.totalLeavesTaken, 0);
